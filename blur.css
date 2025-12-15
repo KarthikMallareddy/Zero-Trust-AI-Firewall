@@ -1,0 +1,19 @@
+/* 1. Default State: Blur EVERYTHING immediately */
+img {
+    filter: blur(20px) !important;
+    transition: filter 0.5s ease-out;
+    opacity: 0.8;
+}
+
+/* 2. Safe State: AI said it's okay */
+img.safe-revealed {
+    filter: none !important;
+    opacity: 1;
+}
+
+/* 3. Blocked State: AI said it's bad */
+img.blocked-content {
+    border: 5px solid red !important;
+    filter: blur(30px) !important;
+    opacity: 0.5;
+}

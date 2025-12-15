@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Zero-Trust AI Firewall",
+  "version": "2.0",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["blur.css"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "sandbox": {
+    "pages": ["sandbox.html"]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "model.json", 
+        "tf.min.js", 
+        "sandbox.html",
+        "group*" 
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]

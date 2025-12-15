@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Zero-Trust AI Firewall",
+  "version": "1.0",
+  "description": "Blocks inappropriate images locally using TensorFlow.js",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["blur.css"],
+      "js": ["tf.min.js", "contentS.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["model.json", "*.bin"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

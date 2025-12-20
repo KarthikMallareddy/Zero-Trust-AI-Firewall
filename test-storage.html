@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Storage System Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Storage System Test Page</h1>
+        <p>This page demonstrates the storage system functionality. Open the browser console to see detailed logs.</p>
+
+        <div class="section">
+            <h3>Settings Management</h3>
+            <button onclick="loadSettings()">Load Current Settings</button>
+            <button onclick="saveDefaultSettings()">Save Default Settings</button>
+            <button onclick="toggleNSFW()">Toggle NSFW Category</button>
+            <button onclick="updateThreshold()">Update Threshold to 0.85</button>
+            <pre id="settings-output">Click "Load Current Settings" to view...</pre>
+        </div>
+
+        <div class="section">
+            <h3>Domain Management</h3>
+            <button onclick="whitelistCurrentDomain()">Whitelist Current Domain</button>
+            <button onclick="removeWhitelist()">Remove from Whitelist</button>
+            <button onclick="getDomainSettings()">Get Domain Settings</button>
+            <pre id="domain-output">Click a button to test...</pre>
+        </div>
+
+        <div class="section">
+            <h3>Statistics</h3>
+            <button onclick="loadStats()">Load Statistics</button>
+            <button onclick="simulateScan()">Simulate Image Scan</button>
+            <button onclick="simulateBlock()">Simulate Blocked Image</button>
+            <button class="danger" onclick="resetStats()">Reset Statistics</button>
+            <pre id="stats-output">Click "Load Statistics" to view...</pre>
+        </div>
+
+        <div class="section">
+            <h3>Import/Export</h3>
+            <button onclick="exportData()">Export All Data</button>
+            <button onclick="importSampleData()">Import Sample Data</button>
+            <pre id="import-export-output">Click a button to test...</pre>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script>
+        const storage = new StorageManager();
+        const currentDomain = window.location.hostname || 'test.local';
+
+        // Settings Management
+        async function loadSettings() {
+            const settings = await storage.loadSettings();
+            document.getElementById('settings-output').textContent = JSON.stringify(settings, null, 2);
+            console.log('✅ Settings loaded:', settings);
+        }
+
+        async function saveDefaultSettings() {
+            const defaults = storage.getDefaultSettings();
+            const success = await storage.saveSettings(defaults);
+            if (success) {
+                document.getElementById('settings-output').innerHTML = '<span class="success">✅ Default settings saved!</span>';
+                await loadSettings();
+            }
+        }
+
+        async function toggleNSFW() {
+            const settings = await storage.loadSettings();
+            settings.categories.nsfw = !settings.categories.nsfw;
+            await storage.saveSettings(settings);
+            document.getElementById('settings-output').innerHTML = 
+                `<span class="success">✅ NSFW category is now: ${settings.categories.nsfw ? 'ENABLED' : 'DISABLED'}</span>`;
+            await loadSettings();
+        }
+
+        async function updateThreshold() {
+            const success = await storage.updateSetting('confidence_threshold', 0.85);
+            if (success) {
+                document.getElementById('settings-output').innerHTML = 
+                    '<span class="success">✅ Global threshold updated to 0.85!</span>';
+                await loadSettings();
+            }
+        }
+
+        // Domain Management
+        async function whitelistCurrentDomain() {
+            const success = await storage.whitelistDomain(currentDomain);
+            if (success) {
+                document.getElementById('domain-output').innerHTML = 
+                    `<span class="success">✅ Domain "${currentDomain}" added to whitelist!</span>`;
+            }
+        }
+
+        async function removeWhitelist() {
+            const success = await storage.removeWhitelistDomain(currentDomain);
+            if (success) {
+                document.getElementById('domain-output').innerHTML = 
+                    `<span class="success">✅ Domain "${currentDomain}" removed from whitelist!</span>`;
+            }
+        }
+
+        async function getDomainSettings() {
+            const settings = await storage.getDomainSettings(currentDomain);
+            document.getElementById('domain-output').textContent = JSON.stringify(settings, null, 2);
+            console.log('✅ Domain settings:', settings);
+        }
+
+        // Statistics
+        async function loadStats() {
+            const stats = await storage.loadStats();
+            document.getElementById('stats-output').textContent = JSON.stringify(stats, null, 2);
+            console.log('✅ Statistics loaded:', stats);
+        }
+
+        async function simulateScan() {
+            const stats = await storage.incrementStats(currentDomain, false);
+            document.getElementById('stats-output').innerHTML = 
+                '<span class="success">✅ Simulated image scan (not blocked)</span>';
+            await loadStats();
+        }
+
+        async function simulateBlock() {
+            const stats = await storage.incrementStats(currentDomain, true, 'weapons');
+            document.getElementById('stats-output').innerHTML = 
+                '<span class="success">✅ Simulated blocked image (weapons category)</span>';
+            await loadStats();
+        }
+
+        async function resetStats() {
+            if (confirm('Are you sure you want to reset all statistics?')) {
+                const success = await storage.resetStats();
+                if (success) {
+                    document.getElementById('stats-output').innerHTML = 
+                        '<span class="success">✅ Statistics reset!</span>';
+                    await loadStats();
+                }
+            }
+        }
+
+        // Import/Export
+        async function exportData() {
+            const data = await storage.exportData();
+            document.getElementById('import-export-output').textContent = JSON.stringify(data, null, 2);
+            console.log('✅ Exported data:', data);
+            
+            // Create downloadable file
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-firewall-backup-${Date.now()}.json`;
+            a.click();
+        }
+
+        async function importSampleData() {
+            const sampleData = {
+                version: '2.0',
+                settings: {
+                    enabled: true,
+                    categories: {
+                        nsfw: false,
+                        violence: true,
+                        weapons: true,
+                        gore: false,
+                        disturbing: false
+                    },
+                    confidence_threshold: 0.80
+                },
+                stats: {
+                    total_scanned: 100,
+                    total_blocked: 15,
+                    by_category: {
+                        nsfw: 5,
+                        violence: 7,
+                        weapons: 3
+                    }
+                }
+            };
+            
+            const success = await storage.importData(sampleData);
+            if (success) {
+                document.getElementById('import-export-output').innerHTML = 
+                    '<span class="success">✅ Sample data imported!</span>';
+                await loadSettings();
+                await loadStats();
+            }
+        }
+
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            console.log('🧪 Storage Test Page Loaded');
+            console.log('📍 Current domain:', currentDomain);
+        });
+    </script>
+</body>
+</html>

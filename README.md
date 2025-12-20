@@ -40,11 +40,16 @@ Content Script (content.js)
 - **sandbox.js** - Model loading and inference engine (isolated context)
 - **sandbox.html** - Sandbox iframe entry point
 - **blur.css** - Styles for image blurring effect
+- **js/storage.js** - Storage manager for user preferences and statistics
+- **js/classifier.js** - Classification logic with category mapping
+- **data/category_mapping.json** - Class → Category definitions
 - **model.json** - MobileNet topology definition
 - **group1-shard1of1 through group55-shard1of1** - Pretrained weight files
 - **tf.min.js** - TensorFlow.js library (2.2MB)
 - **get_shards.py** - Downloads all weight shard files
 - **imagenet_classes.js** - ImageNet class labels (1000 classes)
+- **test-storage.html** - Storage system testing page
+- **docs/STORAGE.md** - Storage system documentation
 
 ## Setup
 

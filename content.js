@@ -1,25 +1,25 @@
 // content.js - Zero-Trust AI Firewall (Enhanced with Categories)
 console.log("🛡️ AI Firewall: Initializing...");
 
+// Initialize storage manager
+const storage = new StorageManager();
+let userSettings = null;
+let currentDomain = window.location.hostname;
+
 // Store iframe globally
 let sandboxIframe = null;
-let userSettings = {
-    categories: {
-        nsfw: true,
-        violence: true,
-        weapons: true,
-        gore: false,
-        disturbing: false
-    },
-    confidence_threshold: 0.70
-};
 
-// Statistics tracking
-let stats = {
-    scanned: 0,
-    blocked: 0,
-    by_category: {}
-};
+// Load settings on startup
+(async function initializeSettings() {
+    userSettings = await storage.getDomainSettings(currentDomain);
+    console.log('📦 Loaded settings for domain:', currentDomain, userSettings);
+    
+    // Listen for settings changes
+    storage.onSettingsChanged((newSettings) => {
+        console.log('📦 Settings updated:', newSettings);
+        userSettings = newSettings;
+    });
+})();
 
 // 1. The Bridge Setup (With Safety Loop)
 function init() {
@@ -50,7 +50,7 @@ init();
 const pendingChecks = new Map();
 let uniqueId = 0;
 
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
     // We only care about messages from our own sandbox
     if (!event.data) return;
 
@@ -64,15 +64,10 @@ window.addEventListener('message', (event) => {
         const img = pendingChecks.get(id);
         
         if (img) {
-            stats.scanned++;
+            // Update statistics in storage
+            await storage.incrementStats(currentDomain, should_block, primary_category);
             
             if (should_block) {
-                stats.blocked++;
-                if (!stats.by_category[primary_category]) {
-                    stats.by_category[primary_category] = 0;
-                }
-                stats.by_category[primary_category]++;
-                
                 // Keep image blurred
                 img.classList.add("content-blocked");
                 img.setAttribute('data-blocked-category', primary_category);
@@ -84,11 +79,6 @@ window.addEventListener('message', (event) => {
                 console.log(`✅ SAFE: ${classifications[0]?.matched_categories.join(', ') || 'Safe content'}`);
             }
             
-            // Log statistics periodically
-            if (stats.scanned % 5 === 0) {
-                console.log(`📈 Stats - Scanned: ${stats.scanned}, Blocked: ${stats.blocked}, Categories: ${JSON.stringify(stats.by_category)}`);
-            }
-            
             pendingChecks.delete(id);
         }
     }
@@ -96,6 +86,11 @@ window.addEventListener('message', (event) => {
 
 // --- 3. Scanning Logic ---
 function scanImages() {
+    // Check if extension is enabled
+    if (!userSettings || !userSettings.enabled) {
+        return;
+    }
+    
     if (!sandboxIframe || !sandboxIframe.contentWindow) {
         return;
     }

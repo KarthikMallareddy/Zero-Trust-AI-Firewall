@@ -56,39 +56,17 @@ window.addEventListener('message', (event) => {
 
     if (event.data.type === 'MODEL_LOADED') {
         console.log("🧠 AI Brain is active!");
-        console.log(`📊 Available categories: ${event.data.categories?.map(c => c.id).join(', ')}`);
     }
     
     if (event.data.type === 'VERDICT') {
-        const { id, classifications, should_block, primary_category, confidence, reason } = event.data;
+        const { id, index, score } = event.data;
         const img = pendingChecks.get(id);
         
         if (img) {
-            stats.scanned++;
-            
-            if (should_block) {
-                stats.blocked++;
-                if (!stats.by_category[primary_category]) {
-                    stats.by_category[primary_category] = 0;
-                }
-                stats.by_category[primary_category]++;
-                
-                // Keep image blurred
-                img.classList.add("content-blocked");
-                img.setAttribute('data-blocked-category', primary_category);
-                img.setAttribute('title', `🚫 Blocked: ${reason}`);
-                console.log(`🚫 ${primary_category.toUpperCase()}: ${reason} (${Math.round(confidence*100)}%)`);
-            } else {
-                // Reveal safe image
-                revealImage(img);
-                console.log(`✅ SAFE: ${classifications[0]?.matched_categories.join(', ') || 'Safe content'}`);
-            }
-            
-            // Log statistics periodically
-            if (stats.scanned % 5 === 0) {
-                console.log(`📈 Stats - Scanned: ${stats.scanned}, Blocked: ${stats.blocked}, Categories: ${JSON.stringify(stats.by_category)}`);
-            }
-            
+            // Verdict Received!
+            // Demo Logic: Just log it and unblur
+            console.log(`👁️ Class ${index} (${Math.round(score*100)}%)`);
+            revealImage(img);
             pendingChecks.delete(id);
         }
     }
@@ -128,21 +106,15 @@ function processImage(img, iframe) {
         const reqId = uniqueId++;
         pendingChecks.set(reqId, img);
         
-        // Blur image while processing
-        img.classList.add("blurred-content");
-        
-        // Send classification request with user settings
         iframe.contentWindow.postMessage({ 
             type: 'CLASSIFY', 
             id: reqId, 
-            payload: dataUrl,
-            settings: userSettings
+            payload: dataUrl 
         }, '*');
 
     } catch (e) {
         // CORS Security Error: We can't read this image data (it's from a different domain).
         // Fail Safe: Unblur it so the user can see it.
-        console.warn("⚠️ CORS restriction - cannot analyze image:", e.message);
         revealImage(img);
     }
 }

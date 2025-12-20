@@ -128,21 +128,15 @@ function processImage(img, iframe) {
         const reqId = uniqueId++;
         pendingChecks.set(reqId, img);
         
-        // Blur image while processing
-        img.classList.add("blurred-content");
-        
-        // Send classification request with user settings
         iframe.contentWindow.postMessage({ 
             type: 'CLASSIFY', 
             id: reqId, 
-            payload: dataUrl,
-            settings: userSettings
+            payload: dataUrl 
         }, '*');
 
     } catch (e) {
         // CORS Security Error: We can't read this image data (it's from a different domain).
         // Fail Safe: Unblur it so the user can see it.
-        console.warn("⚠️ CORS restriction - cannot analyze image:", e.message);
         revealImage(img);
     }
 }

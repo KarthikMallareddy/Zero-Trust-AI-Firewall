@@ -1,0 +1,173 @@
+{
+  "categories": {
+    "nsfw": {
+      "id": "nsfw",
+      "label": "NSFW Content",
+      "description": "Nudity, sexual content, and adult material",
+      "enabled_by_default": true,
+      "confidence_threshold": 0.70,
+      "imagenet_classes": [
+        18, 22, 115, 250, 284, 309, 341, 387, 542, 632, 716, 728, 793, 803, 815, 826, 827, 849
+      ]
+    },
+    "violence": {
+      "id": "violence",
+      "label": "Violence & Aggression",
+      "description": "Fighting, combat, aggressive behavior, and violence",
+      "enabled_by_default": true,
+      "confidence_threshold": 0.75,
+      "imagenet_classes": [
+        65, 100, 101, 102, 103, 104, 105, 106, 107, 109, 110, 111, 112, 113, 114, 116, 117, 118, 119, 120,
+        121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 288, 506, 720, 721, 788, 794, 795, 796, 797, 798
+      ]
+    },
+    "weapons": {
+      "id": "weapons",
+      "label": "Weapons & Guns",
+      "description": "Firearms, weapons, explosives, and dangerous items",
+      "enabled_by_default": true,
+      "confidence_threshold": 0.80,
+      "imagenet_classes": [
+        500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519,
+        520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539,
+        540, 541, 569, 620, 721
+      ]
+    },
+    "gore": {
+      "id": "gore",
+      "label": "Gore & Blood",
+      "description": "Blood, injury, graphic violence, and disturbing medical imagery",
+      "enabled_by_default": false,
+      "confidence_threshold": 0.85,
+      "imagenet_classes": [
+        70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+        90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+      ]
+    },
+    "disturbing": {
+      "id": "disturbing",
+      "label": "Disturbing Content",
+      "description": "Unsettling, disturbing, or psychologically harmful imagery",
+      "enabled_by_default": false,
+      "confidence_threshold": 0.70,
+      "imagenet_classes": []
+    }
+  },
+  
+  "confidence_levels": {
+    "low": {
+      "value": 0.50,
+      "label": "Low Sensitivity (50%)",
+      "description": "Only blocks very confident matches"
+    },
+    "medium": {
+      "value": 0.70,
+      "label": "Medium Sensitivity (70%)",
+      "description": "Recommended - good balance of filtering and false positives"
+    },
+    "high": {
+      "value": 0.85,
+      "label": "High Sensitivity (85%)",
+      "description": "Aggressive filtering, may have false positives"
+    },
+    "strict": {
+      "value": 0.95,
+      "label": "Strict Mode (95%)",
+      "description": "Only allows very clearly safe content"
+    }
+  },
+  
+  "auto_unblur_options": {
+    "manual": {
+      "value": 0,
+      "label": "Manual Only",
+      "description": "User must click to unblur"
+    },
+    "five_seconds": {
+      "value": 5000,
+      "label": "5 Seconds",
+      "description": "Auto-unblur after 5 seconds"
+    },
+    "ten_seconds": {
+      "value": 10000,
+      "label": "10 Seconds",
+      "description": "Auto-unblur after 10 seconds"
+    },
+    "thirty_seconds": {
+      "value": 30000,
+      "label": "30 Seconds",
+      "description": "Auto-unblur after 30 seconds"
+    },
+    "always": {
+      "value": -1,
+      "label": "Always",
+      "description": "Unblur immediately, then blur when clicked"
+    }
+  },
+  
+  "profiles": {
+    "permissive": {
+      "name": "Permissive",
+      "description": "Minimal filtering",
+      "settings": {
+        "categories": {
+          "nsfw": true,
+          "violence": false,
+          "weapons": false,
+          "gore": false,
+          "disturbing": false
+        },
+        "confidence_threshold": 0.85,
+        "auto_unblur_timeout": 5000
+      }
+    },
+    "balanced": {
+      "name": "Balanced (Recommended)",
+      "description": "Good filtering with reasonable false positives",
+      "settings": {
+        "categories": {
+          "nsfw": true,
+          "violence": true,
+          "weapons": true,
+          "gore": false,
+          "disturbing": false
+        },
+        "confidence_threshold": 0.70,
+        "auto_unblur_timeout": 10000
+      }
+    },
+    "strict": {
+      "name": "Strict",
+      "description": "Aggressive filtering for sensitive environments",
+      "settings": {
+        "categories": {
+          "nsfw": true,
+          "violence": true,
+          "weapons": true,
+          "gore": true,
+          "disturbing": true
+        },
+        "confidence_threshold": 0.75,
+        "auto_unblur_timeout": 0
+      }
+    },
+    "parental": {
+      "name": "Parental Control",
+      "description": "Maximum filtering for child safety",
+      "settings": {
+        "categories": {
+          "nsfw": true,
+          "violence": true,
+          "weapons": true,
+          "gore": true,
+          "disturbing": true
+        },
+        "confidence_threshold": 0.60,
+        "auto_unblur_timeout": 0
+      }
+    }
+  },
+  
+  "version": "1.0.0",
+  "last_updated": "2025-01-15"
+}

@@ -156,8 +156,8 @@ window.addEventListener('message', async (event) => {
         try {
             // Wait for model if it's still loading
             const readyModel = model || await loadModel();
-            if (!readyModel || !classifier) {
-                console.error("❌ Model or classifier failed to load");
+            if (!readyModel) {
+                console.error("❌ Model failed to load");
                 return;
             }
             
@@ -174,35 +174,22 @@ window.addEventListener('message', async (event) => {
                     const predictions = await readyModel.predict(tensor).data();
                     tensor.dispose();
 
-                    // 3. Get top 3 predictions
-                    const topN = 3;
-                    const topIndices = Array.from(predictions)
-                        .map((score, idx) => ({ idx, score }))
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, topN);
+                    // 3. Find top class
+                    let maxScore = -1;
+                    let maxIndex = -1;
+                    for (let i = 0; i < predictions.length; i++) {
+                        if (predictions[i] > maxScore) {
+                            maxScore = predictions[i];
+                            maxIndex = i;
+                        }
+                    }
 
-                    // 4. Classify each prediction with category mapping
-                    const classifications = topIndices.map(pred => {
-                        const classification = classifier.classify(pred.idx, pred.score);
-                        const userSettings = event.data.settings || {};
-                        const blockingDecision = classifier.shouldBlock(classification, userSettings);
-                        return {
-                            ...classification,
-                            ...blockingDecision,
-                            summary: classifier.getSummary(classification, blockingDecision)
-                        };
-                    });
-
-                    // 5. Send enhanced verdict back to Page
+                    // 4. Send Verdict back to Page
                     window.parent.postMessage({ 
                         type: 'VERDICT', 
-                        id: id,
-                        predictions: topIndices,
-                        classifications: classifications,
-                        should_block: classifications[0]?.should_block || false,
-                        primary_category: classifications[0]?.primary_category,
-                        confidence: classifications[0]?.confidence,
-                        reason: classifications[0]?.reason
+                        id: id, 
+                        index: maxIndex,
+                        score: maxScore
                     }, '*');
 
                 } catch (e) {

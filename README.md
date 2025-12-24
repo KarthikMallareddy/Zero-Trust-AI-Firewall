@@ -6,17 +6,17 @@ A privacy-first Chrome extension that filters web content using local AI - no da
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-brightgreen)
 
-## ✨ Features
+##  Features
 
-- 🔒 **100% Privacy**: All AI processing happens locally on your device
-- 🎯 **Smart Image Filtering**: Automatically blur and filter images on any website
-- ⚙️ **Customizable Categories**: Toggle content categories and adjust sensitivity
-- 📊 **Real-time Statistics**: Track scanned and blocked images
-- 🌐 **Domain Control**: Whitelist trusted websites
-- 💾 **Sync Settings**: Settings sync across your Chrome browsers
-- ⚡ **Fast & Lightweight**: ~2MB model, works offline
+-  **100% Privacy**: All AI processing happens locally on your device
+-  **Smart Image Filtering**: Automatically blur and filter images on any website
+-  **Customizable Categories**: Toggle content categories and adjust sensitivity
+-  **Real-time Statistics**: Track scanned and blocked images
+-  **Domain Control**: Whitelist trusted websites
+-  **Sync Settings**: Settings sync across your Chrome browsers
+-  **Fast & Lightweight**: ~2MB model, works offline
 
-## 🚀 Installation
+##  Installation
 
 ### From Source
 1. Download or clone this repository
@@ -25,7 +25,7 @@ A privacy-first Chrome extension that filters web content using local AI - no da
 4. Click **Load unpacked**
 5. Select the `AI-Firewall` folder
 
-## 🎮 Usage
+##  Usage
 
 ### Getting Started
 1. Install the extension
@@ -48,7 +48,7 @@ A privacy-first Chrome extension that filters web content using local AI - no da
 - Whitelist domain management
 - Reset to defaults option
 
-## 🧠 Technology Stack
+##  Technology Stack
 
 - **AI Model**: MobileNet v1 (TensorFlow.js)
 - **Processing**: 100% local, sandboxed iframe execution
@@ -56,7 +56,7 @@ A privacy-first Chrome extension that filters web content using local AI - no da
 - **Privacy**: Zero data collection, zero external requests
 - **Security**: Content Security Policy, sandboxed execution
 
-## ⚙️ How It Works
+##  How It Works
 
 ```
 1. Page Loads → All images start blurred (blur.css)
@@ -68,7 +68,7 @@ A privacy-first Chrome extension that filters web content using local AI - no da
 7. Storage → Update statistics, notify popup
 ```
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 AI-Firewall/
@@ -95,7 +95,7 @@ AI-Firewall/
 
 ## ⚠️ Important Information
 
-### What This Extension Does Well ✅
+### What This Extension Does Well 
 - Blocks specific detected objects based on ImageNet classes
 - Provides customizable filtering rules
 - Ensures complete privacy (all local processing)
@@ -121,7 +121,7 @@ AI-Firewall/
 - Enterprise content filtering (use professional tools)
 - Critical content moderation (AI accuracy too low)
 
-## 🔐 Privacy Policy
+##  Privacy Policy
 
 **We collect ZERO data. Period.**
 
@@ -159,7 +159,7 @@ AI-Firewall/
 3. **Performance**: High-resolution images may take longer to process
 4. **Compatibility**: Some websites may have display issues with blurred images
 
-## 📊 Statistics & Analytics
+##  Statistics & Analytics
 
 All statistics are stored **locally only**:
 - Total images scanned
@@ -170,7 +170,7 @@ All statistics are stored **locally only**:
 
 **No data leaves your browser!**
 
-## 🤝 Contributing
+##  Contributing
 
 This is a student/learning project. Suggestions and feedback welcome!
 

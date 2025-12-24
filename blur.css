@@ -1,17 +1,24 @@
-/* 1. Default State: Blur images while scanning */
+/* 1. Default State: Blur ALL images immediately */
+img {
+    filter: blur(20px) !important;
+    transition: filter 0.5s ease-out;
+    opacity: 0.8;
+}
+
+/* 2. Blurred while scanning */
 img.blurred-content {
     filter: blur(20px) !important;
     transition: filter 0.5s ease-out;
     opacity: 0.8;
 }
 
-/* 2. Safe State: AI classified as safe content */
+/* 3. Safe State: AI classified as safe content */
 img.safe-revealed {
     filter: none !important;
     opacity: 1;
 }
 
-/* 3. Blocked State: AI classified as blocked content */
+/* 4. Blocked State: AI classified as blocked content */
 img.content-blocked {
     filter: blur(30px) !important;
     opacity: 0.5;

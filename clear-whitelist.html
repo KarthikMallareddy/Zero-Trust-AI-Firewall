@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Whitelist</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+            min-height: 30px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ AI Firewall Settings</h1>
+        <p>Manage your whitelist settings</p>
+        
+        <button onclick="clearWhitelist()">Clear Whitelist</button>
+        <button onclick="showWhitelist()">Show Whitelist</button>
+        
+        <div id="status"></div>
+        <pre id="output" style="display: none;"></pre>
+    </div>
+
+    <script>
+        function clearWhitelist() {
+            chrome.storage.sync.get('ai_firewall_settings', (result) => {
+                const settings = result.ai_firewall_settings;
+                if (!settings) {
+                    document.getElementById('status').innerHTML = '<span class="error">❌ No settings found</span>';
+                    return;
+                }
+                
+                settings.domain_rules.whitelist = [];
+                
+                chrome.storage.sync.set({ ai_firewall_settings: settings }, () => {
+                    document.getElementById('status').innerHTML = '<span class="success">✅ Whitelist cleared! Reload your pages.</span>';
+                    document.getElementById('output').style.display = 'none';
+                });
+            });
+        }
+
+        function showWhitelist() {
+            chrome.storage.sync.get('ai_firewall_settings', (result) => {
+                const settings = result.ai_firewall_settings;
+                if (!settings) {
+                    document.getElementById('status').innerHTML = '<span class="error">❌ No settings found</span>';
+                    return;
+                }
+                
+                const whitelist = settings.domain_rules.whitelist;
+                const output = document.getElementById('output');
+                const status = document.getElementById('status');
+                
+                if (whitelist.length === 0) {
+                    status.innerHTML = '<span class="success">✅ Whitelist is empty</span>';
+                    output.style.display = 'none';
+                } else {
+                    status.innerHTML = `Found ${whitelist.length} whitelisted domain(s):`;
+                    output.textContent = JSON.stringify(whitelist, null, 2);
+                    output.style.display = 'block';
+                }
+            });
+        }
+
+        // Show whitelist on load
+        window.addEventListener('load', showWhitelist);
+    </script>
+</body>
+</html>

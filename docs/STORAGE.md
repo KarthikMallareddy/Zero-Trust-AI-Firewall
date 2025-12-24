@@ -7,7 +7,7 @@ The storage system manages all persistent data for the AI Firewall extension, in
 ## Architecture
 
 ```
-StorageManager (js/storage.js)
+FirewallStorage (js/storage.js)
     ↓
 Chrome Storage API
     ├── chrome.storage.sync (Settings - synced across devices)

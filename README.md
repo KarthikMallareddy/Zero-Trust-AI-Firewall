@@ -1,143 +1,224 @@
 # 🛡️ Zero-Trust AI Firewall
 
-**A Privacy-First Chrome Extension for Real-Time Content Filtering**
+A privacy-first Chrome extension that filters web content using local AI - no data ever leaves your browser.
 
-The **Zero-Trust AI Firewall** is a browser extension that automatically detects and blocks inappropriate or sensitive images (e.g., NSFW, weapons, gore) on any webpage.
+![Version](https://img.shields.io/badge/version-2.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Privacy](https://img.shields.io/badge/privacy-100%25%20local-brightgreen)
 
-Unlike traditional filters that rely on **cloud APIs and trackers**, this extension runs a **Deep Learning model (MobileNet V1)** entirely inside the user's browser. This ensures **100% Privacy**—no browsing history or image data ever leaves the user's device.
+## ✨ Features
 
-## 🎯 Key Features
+- 🔒 **100% Privacy**: All AI processing happens locally on your device
+- 🎯 **Smart Image Filtering**: Automatically blur and filter images on any website
+- ⚙️ **Customizable Categories**: Toggle content categories and adjust sensitivity
+- 📊 **Real-time Statistics**: Track scanned and blocked images
+- 🌐 **Domain Control**: Whitelist trusted websites
+- 💾 **Sync Settings**: Settings sync across your Chrome browsers
+- ⚡ **Fast & Lightweight**: ~2MB model, works offline
 
-- **🔒 100% Privacy**: All processing happens locally - no data sent to servers
-- **⚡ Real-time Classification**: Analyzes images instantly with MobileNet v1 (0.25x lightweight)
-- **🎭 Intelligent Content Detection**: Classifies NSFW, violence, weapons, gore, disturbing content
-- **🔐 Sandbox Isolation**: Model runs in isolated iframe context for maximum security
-- **⚙️ User Control**: Customizable thresholds, categories, and domain rules
-- **📊 Privacy-Preserving Stats**: Local-only analytics without telemetry
-- **⚡ Lightning Fast**: <300ms inference time, minimal memory usage
-- **💾 Lightweight**: ~2MB model, no cloud dependencies
+## 🚀 Installation
 
-## Architecture
+### From Source
+1. Download or clone this repository
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable **Developer mode** (toggle in top-right corner)
+4. Click **Load unpacked**
+5. Select the `AI-Firewall` folder
+
+## 🎮 Usage
+
+### Getting Started
+1. Install the extension
+2. Click the extension icon to view dashboard
+3. Browse any website - images will be automatically filtered
+4. Click **⚙️ Open Settings** to customize filtering rules
+
+### Features Overview
+
+**Popup Dashboard:**
+- View today's scanning statistics
+- See blocked content categories
+- Access settings and whitelist management
+- Quick enable/disable for current site
+
+**Settings Page:**
+- Master on/off switch
+- Category toggles (NSFW, violence, weapons, gore, disturbing)
+- Confidence threshold slider (50%-95%)
+- Whitelist domain management
+- Reset to defaults option
+
+## 🧠 Technology Stack
+
+- **AI Model**: MobileNet v1 (TensorFlow.js)
+- **Processing**: 100% local, sandboxed iframe execution
+- **Storage**: Chrome Sync API for cross-device settings
+- **Privacy**: Zero data collection, zero external requests
+- **Security**: Content Security Policy, sandboxed execution
+
+## ⚙️ How It Works
 
 ```
-Content Script (content.js)
-    ↓ (creates iframe)
-    ├→ Sandbox HTML (sandbox.html)
-        ↓
-        Sandbox Script (sandbox.js)
-        ├→ TensorFlow.js (tf.min.js)
-        ├→ MobileNet Model (model.json + 55 weight shards)
-        └→ Handles CLASSIFY messages → Returns VERDICT
-    ↑ (postMessage communication)
-    ├→ Listen for MODEL_LOADED
-    └→ Listen for VERDICT
+1. Page Loads → All images start blurred (blur.css)
+2. Content Script → Detects images, creates sandboxed iframe
+3. Sandbox → Loads TensorFlow.js + MobileNet model
+4. Scanner → Sends image data to sandbox every 2 seconds
+5. AI Model → Analyzes image, returns classification
+6. Decision → Block (keep blurred) or Reveal (remove blur)
+7. Storage → Update statistics, notify popup
 ```
 
-## Files
+## 📂 Project Structure
 
-- **manifest.json** - Extension configuration (Manifest V3)
-- **content.js** - Main content script, runs on all webpages
-- **sandbox.js** - Model loading and inference engine (isolated context)
-- **sandbox.html** - Sandbox iframe entry point
-- **blur.css** - Styles for image blurring effect
-- **js/storage.js** - Storage manager for user preferences and statistics
-- **js/classifier.js** - Classification logic with category mapping
-- **data/category_mapping.json** - Class → Category definitions
-- **model.json** - MobileNet topology definition
-- **group1-shard1of1 through group55-shard1of1** - Pretrained weight files
-- **tf.min.js** - TensorFlow.js library (2.2MB)
-- **get_shards.py** - Downloads all weight shard files
-- **imagenet_classes.js** - ImageNet class labels (1000 classes)
-- **test-storage.html** - Storage system testing page
-- **docs/STORAGE.md** - Storage system documentation
+```
+AI-Firewall/
+├── manifest.json              # Chrome extension configuration
+├── content.js                 # Main content script (image scanning)
+├── sandbox.html               # Sandboxed AI execution environment
+├── sandbox.js                 # TensorFlow model loading & inference
+├── popup.html                 # Extension popup UI
+├── popup.js                   # Popup logic and statistics
+├── options.html               # Settings page UI
+├── options.js                 # Settings page logic
+├── blur.css                   # Image blur CSS styles
+├── clear-whitelist.html       # Whitelist management tool
+├── js/
+│   ├── storage.js            # Chrome Storage API wrapper
+│   └── classifier.js         # AI classification logic
+├── data/
+│   └── category_mapping.json # ImageNet class mappings
+├── icons/                     # Extension icons
+├── model.json                 # MobileNet model topology
+├── group1-shard1of1 ... group55-shard1of1  # Model weights
+└── tf.min.js                  # TensorFlow.js library
+```
 
-## Setup
+## ⚠️ Important Information
 
-### Installation
+### What This Extension Does Well ✅
+- Blocks specific detected objects based on ImageNet classes
+- Provides customizable filtering rules
+- Ensures complete privacy (all local processing)
+- Works offline after initial model load
+- Lightweight and fast performance
 
-1. Clone this repository
-2. Download model weights:
-   ```bash
-   python get_shards.py
-   ```
-3. Load extension in Chrome:
-   - Open `chrome://extensions/`
-   - Enable "Developer mode" (top-right)
-   - Click "Load unpacked"
-   - Select this directory
+### Limitations ⚠️
+- **Limited Accuracy**: MobileNet is trained for general object detection, not content moderation
+- **NSFW Detection**: Not reliable for adult content (would need specialized model)
+- **Violence/Gore**: Limited ability to detect graphic content
+- **CORS Restrictions**: Cannot analyze images from different domains due to browser security
+- **False Positives/Negatives**: AI model may incorrectly classify some images
 
-### Dependencies
+### Best Use Cases 💡
+- Learning project / portfolio demonstration
+- General content filtering with custom rules
+- Blocking specific object categories (cars, phones, food, etc.)
+- Privacy-conscious browsing
+- Understanding how local AI works in browsers
 
-- Chrome Browser (latest)
-- Python 3.x (for downloading weights)
-- No npm dependencies required - all code is vanilla JavaScript
+### Not Recommended For ❌
+- Reliable parental controls (use dedicated solutions)
+- Enterprise content filtering (use professional tools)
+- Critical content moderation (AI accuracy too low)
 
-## How It Works
+## 🔐 Privacy Policy
 
-1. **Page Load**: Content script initializes and creates a hidden sandbox iframe
-2. **Model Loading**: Sandbox loads MobileNet model (TensorFlow.js) and weight shards
-3. **Image Detection**: Content script scans DOM for new images, blurs them
-4. **Classification**: Sends image data to sandbox via postMessage
-5. **Verdict**: Sandbox returns classification result (top class + confidence score)
-6. **Display**: Content script unblurs image (or keeps blurred based on policy)
+**We collect ZERO data. Period.**
 
-## Technical Details
+- ✅ No analytics or tracking
+- ✅ No data sent to external servers
+- ✅ All AI processing happens in your browser
+- ✅ No account or login required
+- ✅ Settings stored locally in Chrome
+- ✅ Open source - verify yourself
 
-### Custom IOHandler
-The extension implements a custom TensorFlow.js IOHandler to load the model from `chrome-extension://` URLs, handling the 55 split weight files and properly parsing the model artifacts.
+## 🛠️ Technical Details
 
-### Weight File Management
-- Total of 55 weight shard files
-- Total size: ~2MB
-- Concatenated into single buffer for TensorFlow.js
-- Byte offsets calculated from weightsManifest
+### Performance
+- **Model Size**: ~2MB (MobileNet v1 0.25x)
+- **Initial Load**: 2-3 seconds
+- **Per-Image Analysis**: 50-200ms
+- **Memory Usage**: ~100-150MB
+- **CPU Usage**: Minimal (async processing)
 
-### Sandbox Security
-- Isolated JavaScript context
-- Restricted API access (chrome.runtime not available)
-- Communication only via postMessage
-- Prevents model extraction/tampering
+### Browser Compatibility
+- Chrome 88+
+- Chromium-based browsers (Edge, Brave, Opera)
+- Requires JavaScript enabled
 
-## Performance
+### Security
+- Sandboxed iframe execution (CSP enforced)
+- No eval() or unsafe inline scripts
+- Manifest V3 compliance
+- Minimal permissions requested
 
-- **Model Load Time**: ~3-5 seconds (first load)
-- **Inference Time**: ~200-400ms per image
-- **Memory**: ~50-100MB (TensorFlow.js + model weights)
-- **Model Size**: 0.25x MobileNet (lightweight)
+## 🐛 Known Issues
 
-## Troubleshooting
+1. **CORS Errors**: Many websites block cross-origin image reading (browser security feature)
+2. **Model Accuracy**: MobileNet wasn't designed for content moderation
+3. **Performance**: High-resolution images may take longer to process
+4. **Compatibility**: Some websites may have display issues with blurred images
 
-### Model Not Loading
-- Check DevTools Console for errors
-- Verify all 55 group files are present
-- Ensure `tf.min.js` is loaded
-- Check that extension has `web_accessible_resources` for group* files
+## 📊 Statistics & Analytics
 
-### Images Not Being Classified
-- Verify MODEL_LOADED message appears in console
-- Check that CLASSIFY messages are being sent
-- Ensure sandbox.js is executing in iframe context
-- Look for VERDICT messages in DevTools
+All statistics are stored **locally only**:
+- Total images scanned
+- Total images blocked
+- Breakdown by category
+- Per-domain statistics
+- Recent blocks history (last 20)
 
-### Performance Issues
-- Reduce image classification frequency
-- Use smaller model (currently using 0.25x MobileNet)
-- Process images sequentially instead of parallel
-- Limit to certain image sizes
+**No data leaves your browser!**
 
-## Future Enhancements
+## 🤝 Contributing
 
-- [ ] Custom classification policies
-- [ ] Caching of classification results
-- [ ] User whitelist/blacklist for classes
-- [ ] Statistics dashboard
-- [ ] Support for video frame analysis
-- [ ] Different model sizes (0.5x, 1.0x MobileNet)
+This is a student/learning project. Suggestions and feedback welcome!
 
-## License
+To contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-MIT
+## 📝 License
 
-## Author
+MIT License - Feel free to use, modify, and distribute
 
-AI Firewall Team
+## 🎓 Educational Purpose
+
+This project demonstrates:
+- Chrome Extension development (Manifest V3)
+- TensorFlow.js integration in browser
+- Sandboxed execution for security
+- Chrome Storage API usage
+- Real-time AI inference
+- Privacy-preserving design
+
+## 💡 Future Ideas
+
+- [ ] Keyword-based text filtering
+- [ ] Focus mode with timer
+- [ ] Screen time analytics dashboard
+- [ ] Export/import settings
+- [ ] Performance optimizations
+- [ ] Better model (if found)
+
+## 📞 Support
+
+For issues, questions, or suggestions:
+- Open an issue on GitHub
+- Check existing issues first
+- Provide browser version and screenshots
+
+## 🙏 Acknowledgments
+
+- TensorFlow.js team for the amazing library
+- MobileNet model creators
+- Chrome Extensions documentation
+- Open source community
+
+---
+
+**⚡ Made as a learning project | 100% Local AI | Privacy First | No Tracking**
+
+**Note**: This extension is a proof-of-concept and educational tool. For production content filtering, consider professional solutions with specialized models.

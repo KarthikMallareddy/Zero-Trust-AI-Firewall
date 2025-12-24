@@ -25,11 +25,20 @@ class ExtensionIOHandler {
         const modelArtifacts = await response.json();
         console.log(`✅ Model topology loaded`);
         
+        // Handle both standard format and Keras-converted format
         const weightsManifest = modelArtifacts.weightsManifest || [];
+        
+        if (!weightsManifest || weightsManifest.length === 0) {
+            throw new Error('No weightsManifest found in model.json');
+        }
         
         // Build weightSpecs array by iterating through manifest groups in order
         const weightSpecs = [];
         for (const group of weightsManifest) {
+            if (!group.weights) {
+                console.warn('Group missing weights property:', group);
+                continue;
+            }
             for (const weight of group.weights) {
                 weightSpecs.push({
                     name: weight.name,
@@ -45,6 +54,11 @@ class ExtensionIOHandler {
         const weightBuffers = [];
         
         for (const group of weightsManifest) {
+            if (!group.paths || !Array.isArray(group.paths)) {
+                console.warn('Group missing paths property:', group);
+                continue;
+            }
+            
             for (const path of group.paths) {
                 const url = baseDirectory + path;
                 console.log(`📥 Fetching: ${path}`);
@@ -78,13 +92,27 @@ class ExtensionIOHandler {
         
         console.log(`✅ Concatenated ${totalBytes} bytes of weights`);
         
-        // Return in TensorFlow.js expected format
-        return {
+        // Return model artifacts in the exact format TensorFlow.js expects
+        const artifacts = {
             modelTopology: modelArtifacts.modelTopology,
-            weightsManifest: weightsManifest,  // Keep original manifest
             weightSpecs: weightSpecs,
             weightData: concatenatedWeights.buffer
         };
+        
+        // Add optional fields if they exist
+        if (modelArtifacts.format) artifacts.format = modelArtifacts.format;
+        if (modelArtifacts.generatedBy) artifacts.generatedBy = modelArtifacts.generatedBy;
+        if (modelArtifacts.convertedBy) artifacts.convertedBy = modelArtifacts.convertedBy;
+        if (modelArtifacts.trainingConfig) artifacts.trainingConfig = modelArtifacts.trainingConfig;
+        
+        console.log('📦 Model artifacts structure:', {
+            hasTopology: !!artifacts.modelTopology,
+            weightSpecsCount: weightSpecs.length,
+            weightDataSize: concatenatedWeights.buffer.byteLength,
+            format: artifacts.format
+        });
+        
+        return artifacts;
     }
     
     async save() {
@@ -126,11 +154,17 @@ async function loadModel() {
             console.log("🧠 Loading AI model...");
             console.log(`📍 Model URL: ${modelUrl}`);
             
-            model = await tf.loadGraphModel(modelUrl);
-            
-            console.log("✅ [Sandbox] Brain Loaded!");
-            console.log(`🧬 Model ready - Inputs: ${model.inputs.length}, Outputs: ${model.outputs.length}`);
-            
+            try {
+                // Load MobileNet for object detection
+                model = await tf.loadLayersModel(modelUrl);
+                console.log("✅ [Sandbox] Model Loaded!");
+                console.log(`🧬 Model ready - Inputs: ${model.inputs.length}, Outputs: ${model.outputs.length}`);
+                
+            } catch (loadError) {
+                console.error("❌ Model loading failed:", loadError);
+                console.error("Error stack:", loadError.stack);
+                throw loadError;
+            }            
             // Send MODEL_LOADED with category info
             window.parent.postMessage({ 
                 type: 'MODEL_LOADED',
@@ -153,6 +187,7 @@ window.addEventListener('message', async (event) => {
     const { type, payload, id } = event.data;
 
     if (type === 'CLASSIFY') {
+        console.log(`📨 Received CLASSIFY request (ID: ${id})`);
         try {
             // Wait for model if it's still loading
             const readyModel = model || await loadModel();
@@ -161,11 +196,15 @@ window.addEventListener('message', async (event) => {
                 return;
             }
             
+            console.log(`🤖 Model ready, processing image...`);
+            
             // 1. Create an image element from the data sent
             const img = new Image();
             img.onload = async () => {
                 try {
-                    // 2. Predict
+                    console.log(`🖼️ Image loaded in sandbox, running prediction...`);
+                    
+                    // 2. Run MobileNet prediction
                     const tensor = tf.browser.fromPixels(img)
                         .resizeNearestNeighbor([224, 224])
                         .toFloat()
@@ -173,6 +212,8 @@ window.addEventListener('message', async (event) => {
                     
                     const predictions = await readyModel.predict(tensor).data();
                     tensor.dispose();
+                    
+                    console.log(`✅ Prediction complete`);
 
                     // 3. Get top 3 predictions
                     const topN = 3;
@@ -193,6 +234,8 @@ window.addEventListener('message', async (event) => {
                         };
                     });
 
+                    console.log(`📤 Sending verdict for ID ${id}: ${classifications[0]?.should_block ? 'BLOCK' : 'SAFE'}`);
+                    
                     // 5. Send enhanced verdict back to Page
                     window.parent.postMessage({ 
                         type: 'VERDICT', 
@@ -219,3 +262,7 @@ window.addEventListener('message', async (event) => {
 
 // Start loading the model when the script loads
 loadModel();
+
+// Signal that sandbox is ready
+window.parent.postMessage({ type: 'SANDBOX_READY' }, '*');
+console.log('📡 Sandbox ready and listening for messages');
